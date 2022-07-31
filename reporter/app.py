@@ -19,7 +19,7 @@ async def set_webhook(app: web.Application):
     async with aiohttp.ClientSession() as session:
         async with session.post(
                 f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/setWebhook",
-                data={"url": f"https://{os.environ['DOMAIN_NAME']}/"},
+                json={"url": f"https://{os.environ['DOMAIN_NAME']}{os.environ['WEBHOOK_PATH']}"},
                 headers={'Content-Type': 'application/json'}
         ) as response:
             app.logger.debug(f'Set webhook status: {response.status}.')

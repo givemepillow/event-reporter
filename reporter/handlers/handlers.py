@@ -8,7 +8,7 @@ from reporter.utils import TextMessage, Message
 
 
 class MessageHandler(View):
-    URL_PATH = os.environ['PATH']
+    URL_PATH = os.environ['WEBHOOK_PATH']
     headers = {
         'Content-Type': 'application/json'
     }
