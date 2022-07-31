@@ -1,3 +1,4 @@
-from .handlers import MessageHandler
+from .message_handler import MessageHandler
+from .event_handler import EventHandler
 
-HANDLERS = [MessageHandler]
+HANDLERS = [MessageHandler, EventHandler]

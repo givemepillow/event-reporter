@@ -5,9 +5,11 @@ from argparse import Namespace
 import aiohttp
 from aiohttp import web
 from aiohttp.abc import Application
+from aiohttp_apispec import setup_aiohttp_apispec, validation_middleware
 from dotenv import load_dotenv
 
 from reporter.handlers import HANDLERS
+from reporter.middlewares import error_middleware
 
 
 def setup_logging(app: web.Application) -> None:
@@ -35,4 +37,16 @@ def create_app(args: Namespace) -> Application:
     for handler in HANDLERS:
         app.logger.debug('Registering handler %r as %r', handler, handler.URL_PATH)
         app.router.add_view(handler.URL_PATH, handler)
+
+    app.middlewares.append(validation_middleware)
+    app.middlewares.append(error_middleware)
+
+    setup_aiohttp_apispec(
+        app=app,
+        title="API REFERENCE",
+        version="v1",
+        url="/swagger.json",
+        swagger_path="/swagger"
+    )
+
     return app
