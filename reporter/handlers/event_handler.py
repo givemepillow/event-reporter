@@ -10,7 +10,6 @@ from reporter.utils import TextMessage, Message
 
 
 class EventHandler(View):
-    URL_PATH = '/event'
 
     @docs(tags=['event'], responses={
         204: {"description": "OK. Message sent."},

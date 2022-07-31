@@ -8,7 +8,7 @@ from aiohttp.abc import Application
 from aiohttp_apispec import setup_aiohttp_apispec, validation_middleware
 from dotenv import load_dotenv
 
-from reporter.handlers import HANDLERS
+from reporter.handlers import MessageHandler, EventHandler
 from reporter.middlewares import error_middleware
 
 
@@ -34,9 +34,9 @@ def create_app(args: Namespace) -> Application:
     app = web.Application()
     setup_logging(app)
     app.on_startup.append(set_webhook)
-    for handler in HANDLERS:
-        app.logger.debug('Registering handler %r as %r', handler, handler.URL_PATH)
-        app.router.add_view(handler.URL_PATH, handler)
+
+    app.router.add_view(os.environ['WEBHOOK_PATH'], MessageHandler)
+    app.router.add_view('/event', EventHandler)
 
     app.middlewares.append(validation_middleware)
     app.middlewares.append(error_middleware)
