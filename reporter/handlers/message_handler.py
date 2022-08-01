@@ -26,7 +26,7 @@ class MessageHandler(View):
         message = Message(chat_id=chat_id, message=answer)
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                    f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendMessage",
+                    f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendMessage?parse_mode=HTML",
                     data=message.json(),
                     headers=self.headers) as response:
                 try:
@@ -38,13 +38,13 @@ class MessageHandler(View):
     async def handle(self, content: str, chat_id: int) -> TextMessage:
         match content:
             case '/start':
-                token = f"\n`{await self.start(chat_id)}`"
+                token = f"\n<code>{await self.start(chat_id)}</code>"
                 return TextMessage(f'Ваш токен для доступа к API: {token}')
             case '/delete':
                 await self.delete(chat_id)
                 return TextMessage('Токен безвозвратно удалён, если хотите создать новый - введите: /start.')
             case '/refresh':
-                token = f"\n`{await self.refresh(chat_id)}`"
+                token = f"\n<code>{await self.refresh(chat_id)}</code>"
                 return TextMessage(f'Ваш новый токен для доступа к API: {token}')
             case _:
                 return TextMessage('Чего-чего? Попробуйте заглянуть в меню бота.')
