@@ -52,7 +52,7 @@ class MessageHandler(View):
     async def start(self, chat_id: int) -> UUID:
         async with self.session() as s:
             async with s.begin():
-                token = await (s.execute(
+                token = (await s.execute(
                     select(recipients.c.token).where(recipients.c.chat_id == chat_id)
                 )).scalar()
                 if token:
@@ -77,7 +77,7 @@ class MessageHandler(View):
         async with self.session() as s:
             async with s.begin():
                 token = uuid1()
-                await (s.execute(
+                (await s.execute(
                     update(recipients).values({
                         'chat_id': chat_id,
                         'token': token
