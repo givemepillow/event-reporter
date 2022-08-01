@@ -58,7 +58,7 @@ class MessageHandler(View):
                 if token:
                     return token
                 token = uuid1()
-                await (s.execute(
+                (await s.execute(
                     insert(recipients).values({
                         'chat_id': chat_id,
                         'token': token
