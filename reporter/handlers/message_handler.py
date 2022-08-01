@@ -58,12 +58,12 @@ class MessageHandler(View):
                 if token:
                     return token
                 token = uuid1()
-                (await s.execute(
+                await s.execute(
                     insert(recipients).values({
                         'chat_id': chat_id,
                         'token': token
                     })
-                )).scalar()
+                )
                 return token
 
     async def delete(self, chat_id: int):
@@ -77,10 +77,10 @@ class MessageHandler(View):
         async with self.session() as s:
             async with s.begin():
                 token = uuid1()
-                (await s.execute(
+                await s.execute(
                     update(recipients).values({
                         'chat_id': chat_id,
                         'token': token
                     })
-                )).scalar()
+                )
                 return token
