@@ -38,13 +38,13 @@ class MessageHandler(View):
     async def handle(self, content: str, chat_id: int) -> TextMessage:
         match content:
             case '/start':
-                token = f"```\n{await self.start(chat_id)}\n```"
+                token = f"\n```\n{await self.start(chat_id)}\n```"
                 return TextMessage(f'Ваш токен для доступа к API: {token}')
             case '/delete':
                 await self.delete(chat_id)
                 return TextMessage('Токен безвозвратно удалён, если хотите создать новый - введите: /start.')
             case '/refresh':
-                token = f"```\n{await self.refresh(chat_id)}\n```"
+                token = f"\n```\n{await self.refresh(chat_id)}\n```"
                 return TextMessage(f'Ваш новый токен для доступа к API: {token}')
             case _:
                 return TextMessage('Чего-чего? Попробуйте заглянуть в меню бота.')
