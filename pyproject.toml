@@ -10,6 +10,9 @@ aiohttp = "^3.8.1"
 python-dotenv = "^0.20.0"
 marshmallow = "^3.17.0"
 aiohttp-apispec = "^2.2.3"
+SQLAlchemy = "^1.4.39"
+alembic = "^1.8.1"
+asyncpg = "^0.26.0"
 
 [tool.poetry.dev-dependencies]
 
