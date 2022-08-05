@@ -61,10 +61,10 @@ class EventHandler(View):
     def type_emoji(emoji_type: str):
         match emoji_type:
             case 'INFO':
-                return emoji.emojize(':information_source:')
+                return emoji.emojize(':information_source:', language='alias')
             case 'WARNING':
-                return emoji.emojize(':warning:')
+                return emoji.emojize(':warning:', language='alias')
             case 'ERROR':
-                return emoji.emojize(':sos:')
+                return emoji.emojize(':sos:', language='alias')
             case _:
                 raise ValueError("No matches.")
