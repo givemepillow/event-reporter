@@ -20,7 +20,7 @@ class TextMessage:
             _msg = f'''{self._text}'''
         if self._datetime:
             _msg = _msg + f'''\n<i>{self._datetime.strftime("%Y/%m/%d %H:%M:%S")}</i>'''
-        return _msg
+        return emoji.emojize(_msg, language='alias')
 
 
 class Message:
