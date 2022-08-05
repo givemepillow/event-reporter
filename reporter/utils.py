@@ -1,7 +1,5 @@
 import datetime
 import json
-
-import emoji as emoji
 from aiohttp import web
 
 
@@ -20,7 +18,7 @@ class TextMessage:
             _msg = f'''{self._text}'''
         if self._datetime:
             _msg = _msg + f'''\n<i>{self._datetime.strftime("%Y/%m/%d %H:%M:%S")}</i>'''
-        return emoji.emojize(_msg)
+        return _msg
 
 
 class Message:
