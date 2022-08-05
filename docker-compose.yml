@@ -1,0 +1,69 @@
+version: '3.9'
+services:
+  event-reporter:
+    build: .
+    container_name: event-reporter
+    image: event-reporter:0.1.0
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      DB_URL: 'event_reporter:deepdarkfantasy@database:5432/event_reporter_db'
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      WEBHOOK_PATH: ${WEBHOOK_PATH}
+      PORT: 3344
+    ports:
+      - '${PORT}:3344'
+    networks:
+      - event-reporter-network
+    depends_on:
+      database:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head && python3 -m reporter"
+    restart: always
+  database:
+    image: postgres:13.7
+    container_name: event-reporter-database
+    environment:
+      POSTGRES_DB: "event_reporter_db"
+      POSTGRES_USER: "event_reporter"
+      POSTGRES_PASSWORD: "deepdarkfantasy"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=30"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "work_mem=64MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "max_prepared_transactions=30"
+      - "-c"
+      - "random_page_cost=1.7"
+      - "-c"
+      - "temp_file_limit=1GB"
+      - "-c"
+      - "log_min_error_statement=INFO"
+      - "-c"
+      - "log_min_messages=FATAL"
+      - "-c"
+      - "log_statement=none"
+      - "-c"
+      - "log_destination=stderr"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U event_reporter -d event_reporter_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 7s
+    restart: always
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - event-reporter-network
+
+networks:
+  event-reporter-network:
+    driver: bridge

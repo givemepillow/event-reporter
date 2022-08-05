@@ -4,7 +4,7 @@ REST API service that allows send report messages to telegram via a bot.
 
 Bot (here you can get a token and use the API): [REPORTER ✉](https://t.me/EventReporterBot)
 
-Working service: [event-reporter.droptheseas.ru](event-reporter.droptheseas.ru)
+Working service: [event-reporter.droptheseas.ru](https://event-reporter.droptheseas.ru)
 
 API:
 > **POST** `/event`
