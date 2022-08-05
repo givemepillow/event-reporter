@@ -19,8 +19,8 @@ class TextMessage:
         else:
             _msg = f'''{self._text}'''
         if self._datetime:
-            return _msg + f'''\n<i>{self._datetime.strftime("%Y/%m/%d %H:%M:%S")}</i>'''
-        return _msg
+            _msg = _msg + f'''\n<i>{self._datetime.strftime("%Y/%m/%d %H:%M:%S")}</i>'''
+        return emoji.emojize(_msg)
 
 
 class Message:
@@ -31,7 +31,7 @@ class Message:
         }
 
     def json(self):
-        return json.dumps(emoji.emojize(self._message))
+        return json.dumps(self._message)
 
 
 def json_response(
