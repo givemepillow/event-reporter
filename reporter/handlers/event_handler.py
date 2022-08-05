@@ -3,7 +3,6 @@ from typing import Optional
 from uuid import UUID
 
 import aiohttp
-import emoji
 from aiohttp import web
 from aiohttp.web_urldispatcher import View
 from aiohttp_apispec import request_schema, docs
@@ -30,8 +29,8 @@ class EventHandler(View):
     async def post(self):
         event = self.request.get('data')
         chat_id = await self.get_chat_id_by_token(event.get('token'))
-        # if not chat_id:
-        #     return web.Response(status=401, text='Invalid token.')
+        if not chat_id:
+            return web.Response(status=401, text='Invalid token.')
         message_text = TextMessage(
             title=f"{self.type_emoji(event.get('type'))} {event.get('title')}",
             text=event.get('text'),
