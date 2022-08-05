@@ -32,14 +32,14 @@ class EventHandler(View):
         if not chat_id:
             return web.Response(status=401, text='Invalid token.')
         message_text = TextMessage(
-            title=event.get('title'),
+            title=f"{self.type_emoji(event.get('type'))} {event.get('title')}",
             text=event.get('text'),
             dt=event.get('datetime')
         )
         message = Message(chat_id=chat_id, message=message_text)
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                    f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendMessage",
+                    f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendMessage?parse_mode=HTML",
                     data=message.json(),
                     headers=self.headers
             ) as response:
@@ -55,3 +55,15 @@ class EventHandler(View):
                 select(recipients.c.chat_id).where(recipients.c.token == token)
             )).scalar()
             return token
+
+    @staticmethod
+    def type_emoji(emoji_type: str):
+        match emoji_type:
+            case 'INFO':
+                return ':information_source:'
+            case 'WARNING':
+                return ':warning:'
+            case 'ERROR':
+                return ':sos:'
+            case _:
+                raise ValueError("No matches.")

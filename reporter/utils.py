@@ -1,6 +1,7 @@
 import datetime
 import json
 
+import emoji as emoji
 from aiohttp import web
 
 
@@ -30,7 +31,7 @@ class Message:
         }
 
     def json(self):
-        return json.dumps(self._message)
+        return json.dumps(emoji.emojize(self._message))
 
 
 def json_response(
