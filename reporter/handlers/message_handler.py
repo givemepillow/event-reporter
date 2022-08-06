@@ -7,7 +7,7 @@ from aiohttp.web_urldispatcher import View
 from sqlalchemy import select, delete, update
 from sqlalchemy.dialects.postgresql import insert
 
-from reporter.db.base import Session
+from reporter.db.base import Engine
 from reporter.db.model import recipients
 from reporter.utils import TextMessage, Message
 
@@ -16,7 +16,7 @@ class MessageHandler(View):
     headers = {
         'Content-Type': 'application/json'
     }
-    session = Session
+    engine = Engine
 
     async def post(self):
         data = await self.request.json()
@@ -50,15 +50,15 @@ class MessageHandler(View):
                 return TextMessage('Чего-чего? Попробуйте заглянуть в меню бота.')
 
     async def start(self, chat_id: int) -> UUID:
-        async with self.session() as s:
-            async with s.begin():
-                token = (await s.execute(
+        async with self.engine.connect() as c:
+            async with c.begin():
+                token = (await c.execute(
                     select(recipients.c.token).where(recipients.c.chat_id == chat_id)
                 )).scalar()
                 if token:
                     return token
                 token = uuid1()
-                await s.execute(
+                await c.execute(
                     insert(recipients).values({
                         'chat_id': chat_id,
                         'token': token
@@ -67,17 +67,17 @@ class MessageHandler(View):
                 return token
 
     async def delete(self, chat_id: int):
-        async with self.session() as s:
-            async with s.begin():
-                await s.execute(
+        async with self.engine.connect() as c:
+            async with c.begin():
+                await c.execute(
                     delete(recipients).where(recipients.c.chat_id == chat_id)
                 )
 
     async def refresh(self, chat_id: int) -> UUID:
-        async with self.session() as s:
-            async with s.begin():
+        async with self.engine.connect() as c:
+            async with c.begin():
                 token = uuid1()
-                await s.execute(
+                await c.execute(
                     update(recipients).values({
                         'chat_id': chat_id,
                         'token': token

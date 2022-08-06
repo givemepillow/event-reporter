@@ -8,7 +8,7 @@ from aiohttp.web_urldispatcher import View
 from aiohttp_apispec import request_schema, docs
 from sqlalchemy import select
 
-from reporter.db.base import Session
+from reporter.db.base import Engine
 from reporter.db.model import recipients
 from reporter.schemas import EventSchema
 from reporter.utils import TextMessage, Message
@@ -18,7 +18,7 @@ class EventHandler(View):
     headers = {
         'Content-Type': 'application/json'
     }
-    session = Session
+    engine = Engine
 
     @docs(tags=['event'], responses={
         204: {"description": "OK. Message sent."},
@@ -50,8 +50,8 @@ class EventHandler(View):
         return web.Response(status=204)
 
     async def get_chat_id_by_token(self, token: UUID) -> Optional[int]:
-        async with self.session() as s:
-            token = (await s.execute(
+        async with self.engine.connect() as c:
+            token = (await c.execute(
                 select(recipients.c.chat_id).where(recipients.c.token == token)
             )).scalar()
             return token
