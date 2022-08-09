@@ -1,7 +1,6 @@
 import os
 from uuid import uuid1, UUID
 
-import aiohttp
 from aiohttp import web
 from aiohttp.web_urldispatcher import View
 from sqlalchemy import select, delete, update
@@ -16,7 +15,8 @@ class MessageHandler(View):
     headers = {
         'Content-Type': 'application/json'
     }
-    engine = Engine
+    db = Engine
+    send_message_url = f"/bot{os.environ['BOT_TOKEN']}/sendMessage?parse_mode=HTML"
 
     async def post(self):
         data = await self.request.json()
@@ -24,15 +24,14 @@ class MessageHandler(View):
         content = data['message']['text']
         answer = await self.handle(content, chat_id)
         message = Message(chat_id=chat_id, message=answer)
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                    f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendMessage?parse_mode=HTML",
-                    data=message.json(),
-                    headers=self.headers) as response:
-                try:
-                    assert response.status == 200
-                except Exception:
-                    return web.Response(status=500)
+        async with self.request.app['telegram_session'].post(
+                self.send_message_url,
+                data=message.json(),
+                headers=self.headers) as response:
+            try:
+                assert response.status == 200
+            except Exception:
+                return web.Response(status=500)
         return web.Response(status=200)
 
     async def handle(self, content: str, chat_id: int) -> TextMessage:
@@ -50,7 +49,7 @@ class MessageHandler(View):
                 return TextMessage('Чего-чего? Попробуйте заглянуть в меню бота.')
 
     async def start(self, chat_id: int) -> UUID:
-        async with self.engine.connect() as c:
+        async with self.db.connect() as c:
             async with c.begin():
                 token = (await c.execute(
                     select(recipients.c.token).where(recipients.c.chat_id == chat_id)
@@ -67,14 +66,14 @@ class MessageHandler(View):
                 return token
 
     async def delete(self, chat_id: int):
-        async with self.engine.connect() as c:
+        async with self.db.connect() as c:
             async with c.begin():
                 await c.execute(
                     delete(recipients).where(recipients.c.chat_id == chat_id)
                 )
 
     async def refresh(self, chat_id: int) -> UUID:
-        async with self.engine.connect() as c:
+        async with self.db.connect() as c:
             async with c.begin():
                 token = uuid1()
                 await c.execute(

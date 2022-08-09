@@ -2,7 +2,6 @@ import os
 from typing import Optional
 from uuid import UUID
 
-import aiohttp
 from aiohttp import web
 from aiohttp.web_urldispatcher import View
 from aiohttp_apispec import request_schema, docs
@@ -18,7 +17,8 @@ class EventHandler(View):
     headers = {
         'Content-Type': 'application/json'
     }
-    engine = Engine
+    db = Engine
+    send_message_url = f"/bot{os.environ['BOT_TOKEN']}/sendMessage?parse_mode=HTML"
 
     @docs(tags=['event'], responses={
         204: {"description": "OK. Message sent."},
@@ -37,20 +37,19 @@ class EventHandler(View):
             dt=event.get('datetime')
         )
         message = Message(chat_id=chat_id, message=message_text)
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                    f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendMessage?parse_mode=HTML",
-                    data=message.json(),
-                    headers=self.headers
-            ) as response:
-                try:
-                    assert response.status == 200
-                except Exception:
-                    return web.Response(status=500)
+        async with self.request.app['telegram_session'].post(
+                self.send_message_url,
+                data=message.json(),
+                headers=self.headers
+        ) as response:
+            try:
+                assert response.status == 200
+            except Exception:
+                return web.Response(status=500)
         return web.Response(status=204)
 
     async def get_chat_id_by_token(self, token: UUID) -> Optional[int]:
-        async with self.engine.connect() as c:
+        async with self.db.connect() as c:
             token = (await c.execute(
                 select(recipients.c.chat_id).where(recipients.c.token == token)
             )).scalar()
