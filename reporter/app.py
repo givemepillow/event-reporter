@@ -18,14 +18,19 @@ def setup_logging(app: web.Application) -> None:
 
 
 async def set_webhook(app: web.Application):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-                f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/setWebhook",
-                json={"url": f"https://{os.environ['DOMAIN_NAME']}{os.environ['WEBHOOK_PATH']}"},
-                headers={'Content-Type': 'application/json'}
-        ) as response:
-            app.logger.debug(f'Set webhook status: {response.status}.')
-            assert response.status == 200
+    async with app['telegram_session'].post(
+            f"/bot{os.environ['BOT_TOKEN']}/setWebhook",
+            json={"url": f"https://{os.environ['DOMAIN_NAME']}{os.environ['WEBHOOK_PATH']}"},
+            headers={'Content-Type': 'application/json'}
+    ) as response:
+        app.logger.debug(f'Set webhook status: {response.status}.')
+        assert response.status == 200
+
+
+async def telegram_session_ctx(app: web.Application) -> None:
+    app['telegram_session'] = aiohttp.ClientSession(f"https://api.telegram.org")
+    yield
+    await app['telegram_session'].close()
 
 
 def create_app(args: Namespace) -> Application:
@@ -33,6 +38,8 @@ def create_app(args: Namespace) -> Application:
         load_dotenv(dotenv_path=args.env_file)
     app = web.Application()
     setup_logging(app)
+
+    app.cleanup_ctx.extend((telegram_session_ctx,))
     app.on_startup.append(set_webhook)
 
     app.router.add_view(os.environ['WEBHOOK_PATH'], MessageHandler)
